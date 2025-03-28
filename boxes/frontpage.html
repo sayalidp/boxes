@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bundle & Save</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #e74c3c;
+            --accent-color: #3498db;
+            --light-gray: #f5f5f5;
+            --dark-gray: #333;
+            --white: #fff;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+            --shadow-hover: 0 14px 28px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f9f9f9;
+            color: var(--dark-gray);
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 25px;
+            text-align: center;
+            color: var(--primary-color);
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: var(--secondary-color);
+            border-radius: 3px;
+        }
+        
+        .bundle-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .bundle-option {
+            background-color: var(--white);
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .bundle-option:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .bundle-option.active {
+            border-color: var(--accent-color);
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+        
+        .bundle-option.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background-color: var(--accent-color);
+        }
+        
+        .option-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .option-title {
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--primary-color);
+        }
+        
+        .option-price {
+            font-weight: 700;
+            font-size: 20px;
+            color: var(--primary-color);
+        }
+        
+        .badge-container {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .discount-badge {
+            background-color: var(--secondary-color);
+            color: var(--white);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .popular-badge {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .option-details {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.3s ease;
+        }
+
+        .active .option-details {
+            grid-template-rows: 1fr;
+        }
+
+        .option-details > div {
+            min-height: 0;
+            overflow: hidden;
+        }
+        
+        .size-options, .color-options {
+            margin-top: 15px;
+        }
+        
+        .size-options h3, .color-options h3 {
+            font-size: 15px;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .size-buttons, .color-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .size-btn {
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
+            background-color: var(--white);
+        }
+        
+        .size-btn:hover {
+            border-color: var(--accent-color);
+        }
+        
+        .size-btn.selected {
+            border-color: var(--accent-color);
+            background-color: var(--accent-color);
+            color: var(--white);
+        }
+        
+        .color-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 2px solid transparent;
+        }
+        
+        .color-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .color-btn.selected {
+            border-color: var(--accent-color);
+            transform: scale(1.1);
+            box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--accent-color);
+        }
+        
+        .shipping-info {
+            text-align: center;
+            font-weight: 600;
+            margin: 25px 0 15px;
+            padding: 12px;
+            background-color: rgba(52, 152, 219, 0.1);
+            border-radius: 8px;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .shipping-info::before {
+            content: '🚚';
+            font-size: 18px;
+        }
+        
+        .total {
+            text-align: center;
+            font-weight: 700;
+            font-size: 20px;
+            margin: 15px 0;
+            color: var(--primary-color);
+        }
+        
+        .add-to-cart {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            padding: 16px;
+            width: 100%;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .add-to-cart:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+        }
+        
+        .add-to-cart::before {
+            content: '+';
+            font-size: 20px;
+        }
+        
+        .savings-tag {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background-color: var(--secondary-color);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .bundle-option {
+            transform: translateZ(0);
+            backface-visibility: hidden;
+}
+        }
+    </style>
+</head>
+<body>
+    <h1>Bundle & Save</h1>
+    
+    <div class="bundle-container">
+        <div class="bundle-option" onclick="toggleOption(this)">
+            <div class="savings-tag">50%</div>
+            <div class="option-header">
+                <div>
+                    <div class="option-title">1 Pair</div>
+                    <div class="badge-container">
+                        <div class="discount-badge">SAVE DKK 195</div>
+                    </div>
+                </div>
+                <div class="option-price">DKK 195.00</div>
+            </div>
+            <div class="option-details">
+                <div class="size-options">
+                    <h3>Select Size</h3>
+                    <div class="size-buttons">
+                        <div class="size-btn" onclick="selectSize(this, event)">S</div>
+                        <div class="size-btn" onclick="selectSize(this, event)">M</div>
+                        <div class="size-btn" onclick="selectSize(this, event)">L</div>
+                        <div class="size-btn" onclick="selectSize(this, event)">XL</div>
+                    </div>
+                </div>
+                <div class="color-options">
+                    <h3>Select Color</h3>
+                    <div class="color-buttons">
+                        <div class="color-btn" style="background-color: #000;" onclick="selectColor(this, event)" title="Black"></div>
+                        <div class="color-btn" style="background-color: #ccc;" onclick="selectColor(this, event)" title="Gray"></div>
+                        <div class="color-btn" style="background-color: #8B4513;" onclick="selectColor(this, event)" title="Brown"></div>
+                        <div class="color-btn" style="background-color: #e74c3c;" onclick="selectColor(this, event)" title="Red"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bundle-option active" onclick="toggleOption(this)">
+            <div class="savings-tag">40%</div>
+            <div class="option-header">
+                <div>
+                    <div class="option-title">2 Pair</div>
+                    <div class="badge-container">
+                        <div class="popular-badge">Most Popular</div>
+                        <div class="discount-badge">SAVE DKK 230</div>
+                    </div>
+                </div>
+                <div class="option-price">DKK 345.00</div>
+            </div>
+            <div class="option-details" style="max-height: 300px; opacity: 1; margin-top: 15px;">
+                <div class="size-options">
+                    <h3>Select Size</h3>
+                    <div class="size-buttons">
+                        <div class="size-btn selected" onclick="selectSize(this, event)">S</div>
+                        <div class="size-btn" onclick="selectSize(this, event)">M</div>
+                        <div class="size-btn" onclick="selectSize(this, event)">L</div>
+                        <div class="size-btn" onclick="selectSize(this, event)">XL</div>
+                    </div>
+                </div>
+                <div class="color-options">
+                    <h3>Select Color</h3>
+                    <div class="color-buttons">
+                        <div class="color-btn selected" style="background-color: #000;" onclick="selectColor(this, event)" title="Black"></div>
+                        <div class="color-btn" style="background-color: #ccc;" onclick="selectColor(this, event)" title="Gray"></div>
+                        <div class="color-btn" style="background-color: #8B4513;" onclick="selectColor(this, event)" title="Brown"></div>
+                        <div class="color-btn" style="background-color: #e74c3c;" onclick="selectColor(this, event)" title="Red"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bundle-option" onclick="toggleOption(this)">
+            <div class="savings-tag">60%</div>
+            <div class="option-header">
+                <div>
+                    <div class="option-title">3 Pair</div>
+                    <div class="badge-container">
+                        <div class="discount-badge">SAVE DKK 792</div>
+                    </div>
+                </div>
+                <div class="option-price">DKK 528.00</div>
+            </div>
+            <div class="option-details">
+                <div class="size-options">
+                    <h3>Select Size</h3>
+                    <div class="size-buttons">
+                        <div class="size-btn" onclick="selectSize(this, event)">S</div>
+                        <div class="size-btn" onclick="selectSize(this, event)">M</div>
+                        <div class="size-btn" onclick="selectSize(this, event)">L</div>
+                        <div class="size-btn" onclick="selectSize(this, event)">XL</div>
+                    </div>
+                </div>
+                <div class="color-options">
+                    <h3>Select Color</h3>
+                    <div class="color-buttons">
+                        <div class="color-btn" style="background-color: #000;" onclick="selectColor(this, event)" title="Black"></div>
+                        <div class="color-btn" style="background-color: #ccc;" onclick="selectColor(this, event)" title="Gray"></div>
+                        <div class="color-btn" style="background-color: #8B4513;" onclick="selectColor(this, event)" title="Brown"></div>
+                        <div class="color-btn" style="background-color: #e74c3c;" onclick="selectColor(this, event)" title="Red"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="shipping-info">Free 2 Day Shipping</div>
+    
+    <div class="total">Total: DKK 345.00</div>
+    
+    <button class="add-to-cart">Add to Cart</button>
+
+    <script>
+        // Initialize with the middle option selected by default
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set initial selected size and color for the active option
+            const activeOption = document.querySelector('.bundle-option.active');
+            if (activeOption) {
+                const firstSize = activeOption.querySelector('.size-btn');
+                const firstColor = activeOption.querySelector('.color-btn');
+                if (firstSize) firstSize.classList.add('selected');
+                if (firstColor) firstColor.classList.add('selected');
+            }
+        });
+        
+        function toggleOption(element) {
+            // Close all options first
+            const allOptions = document.querySelectorAll('.bundle-option');
+            allOptions.forEach(opt => {
+                if (opt !== element) {
+                    opt.classList.remove('active');
+                    const details = opt.querySelector('.option-details');
+                    details.style.maxHeight = '0';
+                    details.style.opacity = '0';
+                    details.style.marginTop = '0';
+                }
+            });
+            
+            // Toggle the clicked option
+            element.classList.toggle('active');
+            const details = element.querySelector('.option-details');
+            if (element.classList.contains('active')) {
+                details.style.maxHeight = '300px';
+                details.style.opacity = '1';
+                details.style.marginTop = '15px';
+                
+                // Auto-select first size and color if none selected
+                const selectedSize = element.querySelector('.size-btn.selected');
+                const selectedColor = element.querySelector('.color-btn.selected');
+                
+                if (!selectedSize) {
+                    const firstSize = element.querySelector('.size-btn');
+                    if (firstSize) firstSize.classList.add('selected');
+                }
+                
+                if (!selectedColor) {
+                    const firstColor = element.querySelector('.color-btn');
+                    if (firstColor) firstColor.classList.add('selected');
+                }
+                
+                // Update total price based on selection
+                updateTotalPrice(element.querySelector('.option-price').textContent);
+            } else {
+                details.style.maxHeight = '0';
+                details.style.opacity = '0';
+                details.style.marginTop = '0';
+            }
+        }
+        
+        function selectSize(element, event) {
+            event.stopPropagation();
+            const parent = element.parentElement;
+            const allSizes = parent.querySelectorAll('.size-btn');
+            allSizes.forEach(btn => btn.classList.remove('selected'));
+            element.classList.add('selected');
+            
+            // Update total price when size is selected
+            const bundleOption = element.closest('.bundle-option');
+            if (bundleOption.classList.contains('active')) {
+                updateTotalPrice(bundleOption.querySelector('.option-price').textContent);
+            }
+        }
+        
+        function selectColor(element, event) {
+            event.stopPropagation();
+            const parent = element.parentElement;
+            const allColors = parent.querySelectorAll('.color-btn');
+            allColors.forEach(btn => btn.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+        
+        function updateTotalPrice(priceText) {
+            const price = parseFloat(priceText.replace('DKK ', '').replace(',', ''));
+            document.querySelector('.total').textContent = `Total: DKK ${price.toFixed(2)}`;
+        }
+        
+        // Add animation to Add to Cart button on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const addToCartBtn = document.querySelector('.add-to-cart');
+            setTimeout(() => {
+                addToCartBtn.style.transform = 'scale(1.02)';
+                addToCartBtn.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.1)';
+                
+                setTimeout(() => {
+                    addToCartBtn.style.transform = 'scale(1)';
+                    addToCartBtn.style.boxShadow = 'none';
+                }, 300);
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
